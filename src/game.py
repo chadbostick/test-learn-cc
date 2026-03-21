@@ -28,14 +28,18 @@ def rule(title=""):
         print(f"{'─' * 44}")
 
 
-def show_hand(hand, phase="draw"):
+def show_hand(hand, phase="draw", locked=None):
+    if locked is None:
+        locked = set()
+    locked_indices = {i for i, d in enumerate(hand) if id(d) in locked}
     print()
     for i, die in enumerate(hand):
         label = c(f"{die.color:<8}", die.color)
+        lock = " 🔒" if i in locked_indices else "   "
         if phase == "roll":
-            print(f"  [{i}]  {label}  →  {die.value}")
+            print(f"  [{i}]  {label}  →  {die.value}{lock}")
         else:
-            print(f"  [{i}]  {label}")
+            print(f"  [{i}]  {label}{lock}")
     print()
 
 
@@ -57,22 +61,36 @@ def eval_numbers(hand):
     return False, None, None
 
 
-def get_indices(prompt, max_idx):
-    while True:
-        raw = input(prompt).strip()
-        if not raw:
-            return []
-        try:
-            indices = list({int(x) for x in raw.split(",")})
-            if all(0 <= i <= max_idx for i in indices):
-                return indices
-            print(f"  Indices must be 0–{max_idx}. Try again.")
-        except ValueError:
-            print("  Enter comma-separated numbers (e.g. 0,2,4) or press Enter to proceed.")
-
-
 def sort_hand(hand):
     hand.sort(key=lambda d: d.color)
+
+
+def phase_input(hand, phase, locked):
+    """Single input loop for toggling locks. Returns 'redraw'/'reroll', or 'done'."""
+    print(f"  {DIM}Lock/unlock: type indices (e.g. 0,2)  |  Execute: Enter  |  End phase: q{RESET}")
+    while True:
+        raw = input("  > ").strip().lower()
+
+        if not raw:
+            return "execute"
+
+        if raw == "q":
+            return "done"
+
+        try:
+            indices = list({int(x) for x in raw.split(",")})
+            if not all(0 <= i <= 5 for i in indices):
+                print(f"  Indices must be 0–5.")
+                continue
+            for i in indices:
+                die_id = id(hand[i])
+                if die_id in locked:
+                    locked.remove(die_id)
+                else:
+                    locked.add(die_id)
+            show_hand(hand, phase, locked)
+        except ValueError:
+            print("  Type indices (e.g. 0,2), Enter to execute, or q to end phase.")
 
 
 def draw_phase(bag):
@@ -80,9 +98,10 @@ def draw_phase(bag):
     hand = bag.draw(6)
     sort_hand(hand)
     redraws_left = 3
+    locked = set()
 
     print("\n  Initial draw:")
-    show_hand(hand, "draw")
+    show_hand(hand, "draw", locked)
 
     while True:
         met = eval_colors(hand)
@@ -92,23 +111,24 @@ def draw_phase(bag):
         if redraws_left == 0:
             break
 
-        indices = get_indices(
-            "  Return dice by index (e.g. 0,3) or Enter to proceed: ", 5
-        )
+        action = phase_input(hand, "draw", locked)
 
-        if not indices:
+        if action == "done":
             break
 
-        to_return = [hand[i] for i in indices]
-        bag.return_dice(to_return)
-        new_dice = bag.draw(len(to_return))
-        for slot, new_die in zip(sorted(indices), new_dice):
-            hand[slot] = new_die
+        # Execute redraw — return all unlocked dice
+        unlocked = [d for d in hand if id(d) not in locked]
+        if unlocked:
+            bag.return_dice(unlocked)
+            new_dice = bag.draw(len(unlocked))
+            for i, die in enumerate(hand):
+                if id(die) not in locked:
+                    hand[i] = new_dice.pop(0)
         redraws_left -= 1
         sort_hand(hand)
 
         print("\n  After redraw:")
-        show_hand(hand, "draw")
+        show_hand(hand, "draw", locked)
 
     return hand, eval_colors(hand)
 
@@ -118,9 +138,10 @@ def roll_phase(hand):
     for die in hand:
         die.roll()
     rerolls_left = 3
+    locked = set()  # all unlocked at start of roll phase
 
     print("\n  Initial roll:")
-    show_hand(hand, "roll")
+    show_hand(hand, "roll", locked)
 
     while True:
         success, p1, p2 = eval_numbers(hand)
@@ -132,19 +153,19 @@ def roll_phase(hand):
         if rerolls_left == 0:
             break
 
-        indices = get_indices(
-            "  Select dice to reroll (e.g. 1,4) or Enter to proceed: ", 5
-        )
+        action = phase_input(hand, "roll", locked)
 
-        if not indices:
+        if action == "done":
             break
 
-        for i in indices:
-            hand[i].roll()
+        # Execute reroll — reroll all unlocked dice
+        for die in hand:
+            if id(die) not in locked:
+                die.roll()
         rerolls_left -= 1
 
         print("\n  After reroll:")
-        show_hand(hand, "roll")
+        show_hand(hand, "roll", locked)
 
     return eval_numbers(hand)
 
