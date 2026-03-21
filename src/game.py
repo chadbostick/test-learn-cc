@@ -71,9 +71,14 @@ def get_indices(prompt, max_idx):
             print("  Enter comma-separated numbers (e.g. 0,2,4) or press Enter to proceed.")
 
 
+def sort_hand(hand):
+    hand.sort(key=lambda d: d.color)
+
+
 def draw_phase(bag):
     rule("DRAW PHASE")
     hand = bag.draw(6)
+    sort_hand(hand)
     redraws_left = 3
 
     print("\n  Initial draw:")
@@ -100,6 +105,7 @@ def draw_phase(bag):
         for slot, new_die in zip(sorted(indices), new_dice):
             hand[slot] = new_die
         redraws_left -= 1
+        sort_hand(hand)
 
         print("\n  After redraw:")
         show_hand(hand, "draw")
