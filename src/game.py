@@ -1,5 +1,5 @@
 from src.dice import DiceBag
-from src.goals import GOALS
+from src.goals import load_goals
 
 # ANSI formatting
 COLOR_CODES = {
@@ -152,7 +152,7 @@ def roll_phase(hand, goal):
 
 
 def run_game():
-    goal = GOALS[0]
+    goal = load_goals()[0]
 
     print(f"\n{BOLD}{'═' * 44}{RESET}")
     print(f"{BOLD}         CHROMATIC YAHTZEE{RESET}")

@@ -1,0 +1,9 @@
+[
+  {
+    "name": "Two-Color Two-Pair",
+    "description": "Form two pairs — each pair same color + same number —\n  using two different colors and two different numbers.",
+    "points": 10,
+    "color_check": "two_color_pairs",
+    "number_check": "two_number_pairs"
+  }
+]

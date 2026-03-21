@@ -1,4 +1,6 @@
+import json
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional, Callable
 from collections import Counter
 
@@ -37,18 +39,26 @@ def _two_number_pairs(hand):
 
 
 # ---------------------------------------------------------------------------
-# Goal definitions
+# Registry and loader
 # ---------------------------------------------------------------------------
 
-GOALS = [
-    Goal(
-        name="Two-Color Two-Pair",
-        description=(
-            "Form two pairs — each pair same color + same number —\n"
-            "  using two different colors and two different numbers."
-        ),
-        points=10,
-        color_check=_two_color_pairs,
-        number_check=_two_number_pairs,
-    ),
-]
+CHECK_REGISTRY = {
+    "two_color_pairs": _two_color_pairs,
+    "two_number_pairs": _two_number_pairs,
+}
+
+
+def load_goals():
+    path = Path(__file__).parent / "goals.json"
+    with open(path) as f:
+        data = json.load(f)
+    return [
+        Goal(
+            name=d["name"],
+            description=d["description"],
+            points=d["points"],
+            color_check=CHECK_REGISTRY.get(d.get("color_check")),
+            number_check=CHECK_REGISTRY.get(d.get("number_check")),
+        )
+        for d in data
+    ]
