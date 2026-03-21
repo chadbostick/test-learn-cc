@@ -1,3 +1,4 @@
+import random
 from src.dice import DiceBag
 from src.goals import load_goals
 
@@ -152,7 +153,7 @@ def roll_phase(hand, goal):
 
 
 def run_game():
-    goal = load_goals()[0]
+    goal = random.choice(load_goals())
 
     print(f"\n{BOLD}{'═' * 44}{RESET}")
     print(f"{BOLD}         CHROMATIC YAHTZEE{RESET}")
@@ -180,7 +181,7 @@ def run_game():
         else:
             print(f"\n  ✗ FAILED — color condition not met\n")
             rule("FINAL RESULT")
-            print(f"\n  {BOLD}*** FAILURE ***{RESET}  ({goal.points} pts lost)")
+            print(f"\n  {BOLD}*** FAILURE ***{RESET}  (+0 pts)")
             print("  Draw phase failed. Round over.\n")
             return
     else:
@@ -209,6 +210,6 @@ def run_game():
             print(f"    {c(p1[0], p1[0])}  ×2  →  {p1[1]}")
             print(f"    {c(p2[0], p2[0])}  ×2  →  {p2[1]}")
     else:
-        print(f"\n  {BOLD}*** FAILURE ***{RESET}  ({goal.points} pts lost)")
+        print(f"\n  {BOLD}*** FAILURE ***{RESET}  (+0 pts)")
         print("  Could not form two valid pairs.")
     print(f"\n{'═' * 44}\n")
