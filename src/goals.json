@@ -1,225 +1,225 @@
 [
   {
     "name": "Two-Color Two-Pair",
-    "description": "Form two pairs — each pair same color + same number — using two different colors and two different numbers.",
-    "points": 10,
+    "description": "Form two pairs \u2014 each pair same color + same number \u2014 using two different colors and two different numbers.",
+    "points": 4,
     "color_check": "two_color_pairs",
     "number_check": "two_number_pairs"
   },
   {
     "name": "Three Different Colors",
     "description": "Have at least three different colors in your hand.",
-    "points": 3,
+    "points": 1,
     "color_check": "color_three_unique",
     "number_check": null
   },
   {
     "name": "Two of the Same Color",
     "description": "Have at least two dice of the same color.",
-    "points": 2,
+    "points": 1,
     "color_check": "color_two_same",
     "number_check": null
   },
   {
     "name": "Two of the Same Number",
     "description": "Roll at least two dice showing the same number.",
-    "points": 2,
+    "points": 1,
     "color_check": null,
     "number_check": "number_two_same"
   },
   {
     "name": "Sum 11+ No Ones",
     "description": "Roll a sum of 11 or more without any 1s.",
-    "points": 3,
+    "points": 1,
     "color_check": null,
     "number_check": "number_sum_without_1_ge11"
   },
   {
     "name": "Two Adjacent Numbers",
     "description": "Have at least two consecutive numbers (e.g. 3-4).",
-    "points": 2,
+    "points": 1,
     "color_check": null,
     "number_check": "number_two_straight"
   },
   {
     "name": "Two Pairs of Colors",
     "description": "Have at least two colors each appearing two or more times.",
-    "points": 4,
+    "points": 2,
     "color_check": "two_color_pairs",
     "number_check": null
   },
   {
     "name": "Two Same Numbers on the Same Color",
     "description": "Have two dice of the same color showing the same number.",
-    "points": 5,
+    "points": 2,
     "color_check": "color_two_same",
     "number_check": "number_two_same_same_color"
   },
   {
     "name": "Odd-Even-Even",
     "description": "Have at least 1 odd value and at least 2 even values among your dice.",
-    "points": 3,
+    "points": 2,
     "color_check": null,
     "number_check": "number_odd_even_even"
   },
   {
     "name": "Three Straight Numbers",
     "description": "Have at least three consecutive numbers (e.g. 3-4-5).",
-    "points": 4,
+    "points": 2,
     "color_check": null,
     "number_check": "number_three_straight"
   },
   {
     "name": "Even-Odd-Odd-Odd",
     "description": "Have at least 1 even value and at least 3 odd values among your dice.",
-    "points": 4,
+    "points": 2,
     "color_check": null,
     "number_check": "number_even_odd_odd_odd"
   },
   {
     "name": "Sum 12+ No Twos",
     "description": "Roll a sum of 12 or more without any 2s.",
-    "points": 3,
+    "points": 2,
     "color_check": null,
     "number_check": "number_sum_without_2_ge12"
   },
   {
     "name": "Sum 15+ With a Five",
     "description": "Roll a sum of 15 or more with at least one 5.",
-    "points": 5,
+    "points": 2,
     "color_check": null,
     "number_check": "number_sum_with_5_ge15"
   },
   {
     "name": "Three of the Same Color",
     "description": "Have at least three dice of the same color.",
-    "points": 5,
+    "points": 3,
     "color_check": "color_three_same",
     "number_check": null
   },
   {
     "name": "Four Different Colors",
     "description": "Have at least four different colors in your hand.",
-    "points": 5,
+    "points": 3,
     "color_check": "color_four_unique",
     "number_check": null
   },
   {
     "name": "Only Red and Yellow",
     "description": "All six dice must be Red or Yellow.",
-    "points": 6,
+    "points": 3,
     "color_check": "color_only_red_yellow",
     "number_check": null
   },
   {
     "name": "Only Blue and Orange",
     "description": "All six dice must be Blue or Orange.",
-    "points": 6,
+    "points": 3,
     "color_check": "color_only_blue_orange",
     "number_check": null
   },
   {
     "name": "Only Purple and Green",
     "description": "All six dice must be Purple or Green.",
-    "points": 6,
+    "points": 3,
     "color_check": "color_only_purple_green",
     "number_check": null
   },
   {
     "name": "Three of the Same Number",
     "description": "Roll at least three dice showing the same number.",
-    "points": 6,
+    "points": 3,
     "color_check": null,
     "number_check": "number_three_same"
   },
   {
     "name": "Four Straight Numbers",
     "description": "Have at least four consecutive numbers (e.g. 2-3-4-5).",
-    "points": 7,
+    "points": 3,
     "color_check": null,
     "number_check": "number_four_straight"
   },
   {
     "name": "Three Straight on Three Different Colors",
     "description": "Have three dice showing consecutive numbers, each a different color.",
-    "points": 8,
+    "points": 3,
     "color_check": "color_three_unique",
     "number_check": "number_three_straight_three_colors"
   },
   {
     "name": "Sum 17+ No Threes or Fours",
     "description": "Roll a sum of 17 or more without any 3s or 4s.",
-    "points": 6,
+    "points": 3,
     "color_check": null,
     "number_check": "number_sum_without_34_ge17"
   },
   {
     "name": "Sum 14+ No Fours or Sixes",
     "description": "Roll a sum of 14 or more without any 4s or 6s.",
-    "points": 5,
+    "points": 3,
     "color_check": null,
     "number_check": "number_sum_without_46_ge14"
   },
   {
     "name": "Five Different Colors",
     "description": "Have at least five different colors in your hand.",
-    "points": 7,
+    "points": 4,
     "color_check": "color_five_unique",
     "number_check": null
   },
   {
     "name": "Four of the Same Color",
     "description": "Have at least four dice of the same color.",
-    "points": 8,
+    "points": 4,
     "color_check": "color_four_same",
     "number_check": null
   },
   {
     "name": "Full House of Numbers",
     "description": "Roll three of one number and two of another (XXX + YY).",
-    "points": 9,
+    "points": 4,
     "color_check": null,
     "number_check": "number_full_house"
   },
   {
     "name": "Four of the Same Number",
     "description": "Roll at least four dice showing the same number.",
-    "points": 10,
+    "points": 4,
     "color_check": null,
     "number_check": "number_four_same"
   },
   {
     "name": "Five Straight Numbers",
     "description": "Have at least five consecutive numbers (e.g. 1-2-3-4-5).",
-    "points": 11,
+    "points": 4,
     "color_check": null,
     "number_check": "number_five_straight"
   },
   {
     "name": "Three Straight With Two Doubles",
     "description": "Have three consecutive numbers where both end values form a pair (e.g. 2-2-3-4-4).",
-    "points": 10,
+    "points": 4,
     "color_check": null,
     "number_check": "number_three_straight_two_doubles"
   },
   {
     "name": "Four Straight No Sixes",
     "description": "Have four consecutive numbers without any 6s.",
-    "points": 9,
+    "points": 4,
     "color_check": null,
     "number_check": "number_four_straight_no_6"
   },
   {
     "name": "Sum 20+ No Fours",
     "description": "Roll a sum of 20 or more without any 4s.",
-    "points": 8,
+    "points": 4,
     "color_check": null,
     "number_check": "number_sum_without_4_ge20"
   },
   {
     "name": "Sum 18+ on Four Different Colors",
     "description": "Roll a sum of 18 or more across at least four different colors.",
-    "points": 10,
+    "points": 4,
     "color_check": "color_four_unique",
     "number_check": "number_sum_ge18"
   },
@@ -233,91 +233,91 @@
   {
     "name": "Six Different Colors",
     "description": "Have all six different colors in your hand.",
-    "points": 10,
+    "points": 5,
     "color_check": "color_six_unique",
     "number_check": null
   },
   {
     "name": "Five of the Same Number",
     "description": "Roll at least five dice showing the same number.",
-    "points": 14,
+    "points": 5,
     "color_check": null,
     "number_check": "number_five_same"
   },
   {
     "name": "Four of a Kind Plus a Pair",
     "description": "Roll four of one number and two of another.",
-    "points": 12,
+    "points": 5,
     "color_check": null,
     "number_check": "number_four_of_a_kind_plus_pair"
   },
   {
     "name": "Three Same Numbers on Three Same Colors",
     "description": "Have three dice of the same color all showing the same number.",
-    "points": 12,
+    "points": 5,
     "color_check": "color_three_same",
     "number_check": "number_three_same_same_color"
   },
   {
     "name": "Six Straight Numbers",
     "description": "Roll all six consecutive numbers: 1-2-3-4-5-6.",
-    "points": 15,
+    "points": 5,
     "color_check": null,
     "number_check": "number_six_straight"
   },
   {
     "name": "Sum 23+ No Fives",
     "description": "Roll a sum of 23 or more without any 5s.",
-    "points": 10,
+    "points": 5,
     "color_check": null,
     "number_check": "number_sum_without_5_ge23"
   },
   {
     "name": "Exact Sum 25",
     "description": "Roll a sum of exactly 25.",
-    "points": 12,
+    "points": 5,
     "color_check": null,
     "number_check": "number_exact_25"
   },
   {
     "name": "Two Different Three-of-a-Kinds on Different Colors",
-    "description": "Have two groups of three — each group the same color and same number — using different colors.",
-    "points": 18,
+    "description": "Have two groups of three \u2014 each group the same color and same number \u2014 using different colors.",
+    "points": 36,
     "color_check": "color_two_three_same",
     "number_check": "number_two_three_of_a_kind_diff_colors"
   },
   {
     "name": "Six Straight on Six Colors",
     "description": "Roll 1-2-3-4-5-6 across all six different colors.",
-    "points": 25,
+    "points": 36,
     "color_check": "color_six_unique",
     "number_check": "number_six_straight"
   },
   {
     "name": "Six of the Same Number",
     "description": "Roll all six dice showing the same number.",
-    "points": 20,
+    "points": 36,
     "color_check": null,
     "number_check": "number_six_same"
   },
   {
     "name": "Sum 36+",
     "description": "Roll a sum of 36 or more (all sixes).",
-    "points": 25,
+    "points": 36,
     "color_check": null,
     "number_check": "number_sum_ge36"
   },
   {
     "name": "Sum 29+ No Sixes",
     "description": "Roll a sum of 29 or more without any 6s.",
-    "points": 15,
+    "points": 36,
     "color_check": null,
     "number_check": "number_sum_without_6_ge29"
   },
   {
     "name": "Six of the Same Color",
     "description": "Draw all six dice of the same color.",
-    "points": 20,
+    "points": 36,
     "color_check": "color_six_same",
     "number_check": null
   }
