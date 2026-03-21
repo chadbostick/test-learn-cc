@@ -152,12 +152,10 @@ def roll_phase(hand, goal):
     return goal.number_check(hand)
 
 
-def run_game():
+def play_round(round_num, total_rounds):
     goal = random.choice(load_goals())
 
-    print(f"\n{BOLD}{'═' * 44}{RESET}")
-    print(f"{BOLD}         CHROMATIC YAHTZEE{RESET}")
-    print(f"{BOLD}{'═' * 44}{RESET}")
+    rule(f"ROUND {round_num} of {total_rounds}")
     print(f"""
   Goal   : {goal.name}
   Points : {goal.points}
@@ -171,7 +169,7 @@ def run_game():
 
     bag = DiceBag()
 
-    # --- Draw Phase (if goal has a color component) ---
+    # --- Draw Phase ---
     if goal.color_check:
         hand, color_met = draw_phase(bag, goal)
 
@@ -180,15 +178,14 @@ def run_game():
             print(f"\n  ✓ PASSED — color condition met\n")
         else:
             print(f"\n  ✗ FAILED — color condition not met\n")
-            rule("FINAL RESULT")
-            print(f"\n  {BOLD}*** FAILURE ***{RESET}  (+0 pts)")
-            print("  Draw phase failed. Round over.\n")
-            return
+            rule("ROUND RESULT")
+            print(f"\n  {BOLD}*** FAILURE ***{RESET}  (+0 pts)\n")
+            return 0
     else:
         hand = bag.draw(6)
         sort_hand(hand)
 
-    # --- Roll Phase (if goal has a number component) ---
+    # --- Roll Phase ---
     if goal.number_check:
         success, info = roll_phase(hand, goal)
 
@@ -200,8 +197,8 @@ def run_game():
     else:
         success, info = True, None
 
-    # --- Final Result ---
-    rule("FINAL RESULT")
+    # --- Round Result ---
+    rule("ROUND RESULT")
     if success:
         print(f"\n  {BOLD}*** SUCCESS! ***{RESET}  +{goal.points} pts")
         if info:
@@ -209,7 +206,34 @@ def run_game():
             print(f"\n  Winning pairs:")
             print(f"    {c(p1[0], p1[0])}  ×2  →  {p1[1]}")
             print(f"    {c(p2[0], p2[0])}  ×2  →  {p2[1]}")
+        print()
+        return goal.points
     else:
-        print(f"\n  {BOLD}*** FAILURE ***{RESET}  (+0 pts)")
-        print("  Could not form two valid pairs.")
-    print(f"\n{'═' * 44}\n")
+        print(f"\n  {BOLD}*** FAILURE ***{RESET}  (+0 pts)\n")
+        return 0
+
+
+def run_game():
+    total_rounds = 6
+
+    print(f"\n{BOLD}{'═' * 44}{RESET}")
+    print(f"{BOLD}         CHROMATIC YAHTZEE{RESET}")
+    print(f"{BOLD}{'═' * 44}{RESET}")
+    print(f"\n  {total_rounds} rounds — a new goal each round.\n")
+    input("  Press Enter to begin...\n")
+
+    total_score = 0
+    scores = []
+
+    for round_num in range(1, total_rounds + 1):
+        earned = play_round(round_num, total_rounds)
+        total_score += earned
+        scores.append(earned)
+        print(f"  Score so far: {total_score} pts  "
+              f"({' + '.join(str(s) for s in scores)})")
+        if round_num < total_rounds:
+            input(f"\n  Press Enter for round {round_num + 1}...\n")
+
+    print(f"\n{BOLD}{'═' * 44}{RESET}")
+    print(f"{BOLD}         FINAL SCORE: {total_score} pts{RESET}")
+    print(f"{'═' * 44}\n")
