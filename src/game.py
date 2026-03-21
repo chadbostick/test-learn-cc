@@ -1,5 +1,5 @@
-from collections import Counter
 from src.dice import DiceBag
+from src.goals import GOALS
 
 # ANSI formatting
 COLOR_CODES = {
@@ -43,30 +43,12 @@ def show_hand(hand, phase="draw", locked=None):
     print()
 
 
-def eval_colors(hand):
-    counts = Counter(d.color for d in hand)
-    qualifying = [color for color, n in counts.items() if n >= 2]
-    return len(qualifying) >= 2
-
-
-def eval_numbers(hand):
-    groups = Counter((d.color, d.value) for d in hand)
-    pairs = [(color, val) for (color, val), cnt in groups.items() if cnt >= 2]
-    for i in range(len(pairs)):
-        for j in range(i + 1, len(pairs)):
-            c1, v1 = pairs[i]
-            c2, v2 = pairs[j]
-            if c1 != c2 and v1 != v2:
-                return True, pairs[i], pairs[j]
-    return False, None, None
-
-
 def sort_hand(hand):
     hand.sort(key=lambda d: d.color)
 
 
 def phase_input(hand, phase, locked):
-    """Single input loop for toggling locks. Returns 'redraw'/'reroll', or 'done'."""
+    """Input loop for toggling locks. Returns 'execute' or 'done'."""
     print(f"  {DIM}Lock/unlock: type indices (e.g. 0,2)  |  Execute: Enter  |  End phase: q{RESET}")
     while True:
         raw = input("  > ").strip().lower()
@@ -80,7 +62,7 @@ def phase_input(hand, phase, locked):
         try:
             indices = list({int(x) for x in raw.split(",")})
             if not all(0 <= i <= 5 for i in indices):
-                print(f"  Indices must be 0–5.")
+                print("  Indices must be 0–5.")
                 continue
             for i in indices:
                 die_id = id(hand[i])
@@ -93,7 +75,7 @@ def phase_input(hand, phase, locked):
             print("  Type indices (e.g. 0,2), Enter to execute, or q to end phase.")
 
 
-def draw_phase(bag):
+def draw_phase(bag, goal):
     rule("DRAW PHASE")
     hand = bag.draw(6)
     sort_hand(hand)
@@ -104,7 +86,7 @@ def draw_phase(bag):
     show_hand(hand, "draw", locked)
 
     while True:
-        met = eval_colors(hand)
+        met = goal.color_check(hand)
         print(f"  Color condition : {'✓ MET' if met else '✗ not met'}")
         print(f"  Redraws left    : {redraws_left}")
 
@@ -116,7 +98,6 @@ def draw_phase(bag):
         if action == "done":
             break
 
-        # Execute redraw — return all unlocked dice
         unlocked = [d for d in hand if id(d) not in locked]
         if unlocked:
             bag.return_dice(unlocked)
@@ -130,23 +111,24 @@ def draw_phase(bag):
         print("\n  After redraw:")
         show_hand(hand, "draw", locked)
 
-    return hand, eval_colors(hand)
+    return hand, goal.color_check(hand)
 
 
-def roll_phase(hand):
+def roll_phase(hand, goal):
     rule("ROLL PHASE")
     for die in hand:
         die.roll()
     rerolls_left = 3
-    locked = set()  # all unlocked at start of roll phase
+    locked = set()
 
     print("\n  Initial roll:")
     show_hand(hand, "roll", locked)
 
     while True:
-        success, p1, p2 = eval_numbers(hand)
+        success, info = goal.number_check(hand)
         print(f"  Number condition: {'✓ MET' if success else '✗ not met'}")
-        if success:
+        if success and info:
+            p1, p2 = info
             print(f"  Pairs: {c(p1[0], p1[0])}:{p1[1]}  and  {c(p2[0], p2[0])}:{p2[1]}")
         print(f"  Rerolls left    : {rerolls_left}")
 
@@ -158,7 +140,6 @@ def roll_phase(hand):
         if action == "done":
             break
 
-        # Execute reroll — reroll all unlocked dice
         for die in hand:
             if id(die) not in locked:
                 die.roll()
@@ -167,19 +148,20 @@ def roll_phase(hand):
         print("\n  After reroll:")
         show_hand(hand, "roll", locked)
 
-    return eval_numbers(hand)
+    return goal.number_check(hand)
 
 
 def run_game():
+    goal = GOALS[0]
+
     print(f"\n{BOLD}{'═' * 44}{RESET}")
     print(f"{BOLD}         CHROMATIC YAHTZEE{RESET}")
     print(f"{BOLD}{'═' * 44}{RESET}")
     print(f"""
-  Goal: Draw 6 colored dice, then roll them.
-  Form two pairs where each pair is:
-    • same color  +  same number
-  The two pairs must use different colors
-  and different numbers.
+  Goal   : {goal.name}
+  Points : {goal.points}
+
+  {goal.description}
 
   {DIM}Draw phase : up to 3 redraws
   Roll phase : up to 3 rerolls{RESET}
@@ -188,36 +170,45 @@ def run_game():
 
     bag = DiceBag()
 
-    # --- Draw Phase ---
-    hand, color_met = draw_phase(bag)
+    # --- Draw Phase (if goal has a color component) ---
+    if goal.color_check:
+        hand, color_met = draw_phase(bag, goal)
 
-    rule("DRAW PHASE RESULT")
-    if color_met:
-        print(f"\n  ✓ PASSED — two qualifying colors found\n")
+        rule("DRAW PHASE RESULT")
+        if color_met:
+            print(f"\n  ✓ PASSED — color condition met\n")
+        else:
+            print(f"\n  ✗ FAILED — color condition not met\n")
+            rule("FINAL RESULT")
+            print(f"\n  {BOLD}*** FAILURE ***{RESET}  ({goal.points} pts lost)")
+            print("  Draw phase failed. Round over.\n")
+            return
     else:
-        print(f"\n  ✗ FAILED — could not meet color condition\n")
-        rule("FINAL RESULT")
-        print(f"\n  {BOLD}*** FAILURE ***{RESET}")
-        print("  Draw phase failed. Round over.\n")
-        return
+        hand = bag.draw(6)
+        sort_hand(hand)
 
-    # --- Roll Phase ---
-    success, p1, p2 = roll_phase(hand)
+    # --- Roll Phase (if goal has a number component) ---
+    if goal.number_check:
+        success, info = roll_phase(hand, goal)
 
-    rule("ROLL PHASE RESULT")
-    if success:
-        print(f"\n  ✓ PASSED — two valid pairs found\n")
+        rule("ROLL PHASE RESULT")
+        if success:
+            print(f"\n  ✓ PASSED — number condition met\n")
+        else:
+            print(f"\n  ✗ FAILED — number condition not met\n")
     else:
-        print(f"\n  ✗ FAILED — could not form two valid pairs\n")
+        success, info = True, None
 
     # --- Final Result ---
     rule("FINAL RESULT")
     if success:
-        print(f"\n  {BOLD}*** SUCCESS! ***{RESET}")
-        print(f"\n  Winning pairs:")
-        print(f"    {c(p1[0], p1[0])}  ×2  →  {p1[1]}")
-        print(f"    {c(p2[0], p2[0])}  ×2  →  {p2[1]}")
+        print(f"\n  {BOLD}*** SUCCESS! ***{RESET}  +{goal.points} pts")
+        if info:
+            p1, p2 = info
+            print(f"\n  Winning pairs:")
+            print(f"    {c(p1[0], p1[0])}  ×2  →  {p1[1]}")
+            print(f"    {c(p2[0], p2[0])}  ×2  →  {p2[1]}")
     else:
-        print(f"\n  {BOLD}*** FAILURE ***{RESET}")
+        print(f"\n  {BOLD}*** FAILURE ***{RESET}  ({goal.points} pts lost)")
         print("  Could not form two valid pairs.")
     print(f"\n{'═' * 44}\n")
