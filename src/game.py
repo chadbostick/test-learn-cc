@@ -1,6 +1,7 @@
+import os
 import random
-from src.dice import DiceBag
 from src.goals import load_goals
+from src.engine import RoundState
 
 # ANSI formatting
 COLOR_CODES = {
@@ -29,10 +30,9 @@ def rule(title=""):
         print(f"{'─' * 44}")
 
 
-def show_hand(hand, phase="draw", locked=None):
-    if locked is None:
-        locked = set()
-    locked_indices = {i for i, d in enumerate(hand) if id(d) in locked}
+def show_hand(hand, phase="draw", locked_indices=None):
+    if locked_indices is None:
+        locked_indices = set()
     print()
     for i, die in enumerate(hand):
         label = c(f"{die.color:<8}", die.color)
@@ -44,116 +44,95 @@ def show_hand(hand, phase="draw", locked=None):
     print()
 
 
-def sort_hand(hand):
-    hand.sort(key=lambda d: d.color)
-
-
-def phase_input(hand, phase, locked):
-    """Input loop for toggling locks. Returns 'execute' or 'done'."""
+def phase_input():
+    """Read one line of input. Returns ('execute', []), ('done', []), or ('toggle', [indices])."""
     print(f"  {DIM}Lock/unlock: type indices (e.g. 0,2)  |  Execute: Enter  |  End phase: q{RESET}")
     while True:
         raw = input("  > ").strip().lower()
-
         if not raw:
-            return "execute"
-
+            return "execute", []
         if raw == "q":
-            return "done"
-
+            return "done", []
         try:
             indices = list({int(x) for x in raw.split(",")})
             if not all(0 <= i <= 5 for i in indices):
                 print("  Indices must be 0–5.")
                 continue
-            for i in indices:
-                die_id = id(hand[i])
-                if die_id in locked:
-                    locked.remove(die_id)
-                else:
-                    locked.add(die_id)
-            show_hand(hand, phase, locked)
+            return "toggle", indices
         except ValueError:
             print("  Type indices (e.g. 0,2), Enter to execute, or q to end phase.")
 
 
-def draw_phase(bag, goal):
+def draw_phase(state):
     rule("DRAW PHASE")
-    hand = bag.draw(6)
-    sort_hand(hand)
-    redraws_left = 3
-    locked = set()
+    state.draw_initial()
 
     print("\n  Initial draw:")
-    show_hand(hand, "draw", locked)
+    show_hand(state.hand, "draw", state.locked_indices())
 
     while True:
-        met = goal.color_check(hand)
+        met = state.evaluate_color()
         print(f"  Color condition : {'✓ MET' if met else '✗ not met'}")
-        print(f"  Redraws left    : {redraws_left}")
+        print(f"  Redraws left    : {state.redraws_left}")
 
-        if redraws_left == 0:
+        if state.redraws_left == 0:
             break
 
-        action = phase_input(hand, "draw", locked)
+        action, indices = phase_input()
 
         if action == "done":
             break
+        if action == "toggle":
+            state.toggle_lock(indices)
+            show_hand(state.hand, "draw", state.locked_indices())
+            continue
 
-        unlocked = [d for d in hand if id(d) not in locked]
-        if unlocked:
-            bag.return_dice(unlocked)
-            new_dice = bag.draw(len(unlocked))
-            for i, die in enumerate(hand):
-                if id(die) not in locked:
-                    hand[i] = new_dice.pop(0)
-        redraws_left -= 1
-        sort_hand(hand)
-
+        # execute redraw
+        state.execute_redraw()
         print("\n  After redraw:")
-        show_hand(hand, "draw", locked)
+        show_hand(state.hand, "draw", state.locked_indices())
 
-    return hand, goal.color_check(hand)
+    return state.evaluate_color()
 
 
-def roll_phase(hand, goal):
+def roll_phase(state):
     rule("ROLL PHASE")
-    for die in hand:
-        die.roll()
-    rerolls_left = 3
-    locked = set()
+    state.roll_all()
 
     print("\n  Initial roll:")
-    show_hand(hand, "roll", locked)
+    show_hand(state.hand, "roll", state.locked_indices())
 
     while True:
-        success, info = goal.number_check(hand)
+        success, info = state.evaluate_number()
         print(f"  Number condition: {'✓ MET' if success else '✗ not met'}")
         if success and info:
             p1, p2 = info
             print(f"  Pairs: {c(p1[0], p1[0])}:{p1[1]}  and  {c(p2[0], p2[0])}:{p2[1]}")
-        print(f"  Rerolls left    : {rerolls_left}")
+        print(f"  Rerolls left    : {state.rerolls_left}")
 
-        if rerolls_left == 0:
+        if state.rerolls_left == 0:
             break
 
-        action = phase_input(hand, "roll", locked)
+        action, indices = phase_input()
 
         if action == "done":
             break
+        if action == "toggle":
+            state.toggle_lock(indices)
+            show_hand(state.hand, "roll", state.locked_indices())
+            continue
 
-        for die in hand:
-            if id(die) not in locked:
-                die.roll()
-        rerolls_left -= 1
-
+        # execute reroll
+        state.execute_reroll()
         print("\n  After reroll:")
-        show_hand(hand, "roll", locked)
+        show_hand(state.hand, "roll", state.locked_indices())
 
-    return goal.number_check(hand)
+    return state.evaluate_number()
 
 
 def play_round(round_num, total_rounds):
     goal = random.choice(load_goals())
+    state = RoundState(goal)
 
     rule(f"ROUND {round_num} of {total_rounds}")
     print(f"""
@@ -167,11 +146,9 @@ def play_round(round_num, total_rounds):
 """)
     input("  Press Enter to begin...\n")
 
-    bag = DiceBag()
-
     # --- Draw Phase ---
     if goal.color_check:
-        hand, color_met = draw_phase(bag, goal)
+        color_met = draw_phase(state)
 
         rule("DRAW PHASE RESULT")
         if color_met:
@@ -182,12 +159,11 @@ def play_round(round_num, total_rounds):
             print(f"\n  {BOLD}*** FAILURE ***{RESET}  (+0 pts)\n")
             return 0
     else:
-        hand = bag.draw(6)
-        sort_hand(hand)
+        state.draw_initial()
 
     # --- Roll Phase ---
     if goal.number_check:
-        success, info = roll_phase(hand, goal)
+        success, info = roll_phase(state)
 
         rule("ROLL PHASE RESULT")
         if success:
@@ -214,6 +190,7 @@ def play_round(round_num, total_rounds):
 
 
 def run_game():
+    os.system("clear")
     total_rounds = 6
 
     print(f"\n{BOLD}{'═' * 44}{RESET}")
